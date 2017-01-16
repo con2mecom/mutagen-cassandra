@@ -4,7 +4,7 @@
 
     <groupId>com.toddfast.mutagen</groupId>
     <artifactId>mutagen-cassandra-tobox</artifactId>
-    <version>0.4.8-SNAPSHOT</version>
+    <version>0.5.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>toddfast-mutagen-cassandra-tobox</name>
@@ -152,4 +152,16 @@
         </dependency>
 
     </dependencies>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>tobox</id>
+            <url>http://nexus.in.tobox.com/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>tobox</id>
+            <url>http://nexus.in.tobox.com/content/repositories/releases</url>
+        </repository>
+    </distributionManagement>
+
 </project>
