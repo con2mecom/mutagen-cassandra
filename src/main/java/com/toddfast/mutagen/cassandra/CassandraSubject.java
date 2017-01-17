@@ -20,20 +20,14 @@ public class CassandraSubject implements Subject<Integer> {
 
     private SessionHolder sessionHolder;
 
-    private String tableCreationQuery = "CREATE TABLE IF NOT EXISTS %s.%s(key text, column1 text, value blob, PRIMARY KEY(key, column1));";
-
     private SchemaVersionDao schemaVersionDao;
 
     public CassandraSubject(SessionHolder sessionHolder, SchemaVersionDao schemaVersionDao) {
         this.sessionHolder = sessionHolder;
-        createSchemaVersionTable();
         this.schemaVersionDao = schemaVersionDao;
-
+        schemaVersionDao.createSchemaVersionTable();
     }
 
-    private void createSchemaVersionTable() {
-        sessionHolder.get().execute(String.format(tableCreationQuery, sessionHolder.get().getLoggedKeyspace(), SchemaConstants.TABLE_SCHEMA_VERSION));
-    }
 
     @Override
     public State<Integer> getCurrentState() {
@@ -43,7 +37,7 @@ public class CassandraSubject implements Subject<Integer> {
         TableMetadata tableMetadata = schemaVersionMapper.getTableMetadata();
 
         if (tableMetadata == null) {
-            createSchemaVersionTable();
+            schemaVersionDao.createSchemaVersionTable();
         }
 
         SchemaVersion schemaVersions = schemaVersionDao.findLastVersion();

@@ -15,13 +15,19 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 
 public class SchemaVersionDao {
 
+    private String tableCreationQuery = "CREATE TABLE IF NOT EXISTS %s.%s(key text, column1 text, value blob, PRIMARY KEY(key, column1));";
     private SessionHolder sessionHolder;
     private Mapper<SchemaVersion> schemaVersionMapper;
 
     public SchemaVersionDao(SessionHolder sessionHolder) {
         this.sessionHolder = sessionHolder;
+        createSchemaVersionTable();
         this.schemaVersionMapper = new MappingManager(this.sessionHolder.get()).mapper(SchemaVersion.class);
 
+    }
+
+    public void createSchemaVersionTable() {
+        sessionHolder.get().execute(String.format(tableCreationQuery, sessionHolder.get().getLoggedKeyspace(), SchemaConstants.TABLE_SCHEMA_VERSION));
     }
 
     public List<SchemaVersion> findAll() {

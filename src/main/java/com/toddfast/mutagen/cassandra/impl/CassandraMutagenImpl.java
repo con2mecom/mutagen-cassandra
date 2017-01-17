@@ -55,8 +55,10 @@ public class CassandraMutagenImpl implements CassandraMutagen {
         this(session, new CassandraMutagenConfig());
     }
 
+    @SuppressWarnings("WeakerAccess")
     public void initialize(String mutationResourcePath, String premutationResourcePath, String rawMutationsPath)
         throws IOException {
+        log.info("Initialize Cassandra Mutagen [{}], [{}], [{}] ", mutationResourcePath, premutationResourcePath, rawMutationsPath);
         this.mutationResources = locateSources(mutationResourcePath).stream()
                                                                     .map(s -> s.substring(s.indexOf(mutationResourcePath)))
                                                                     .collect(Collectors.toList());

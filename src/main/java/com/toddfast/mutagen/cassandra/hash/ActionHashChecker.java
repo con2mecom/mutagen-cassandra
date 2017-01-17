@@ -5,10 +5,12 @@ import com.toddfast.mutagen.cassandra.AbstractCassandraMutation;
 import com.toddfast.mutagen.cassandra.dao.SchemaVersionDao;
 import com.toddfast.mutagen.cassandra.impl.SessionHolder;
 import com.toddfast.mutagen.cassandra.table.SchemaVersion;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -50,7 +52,7 @@ public class ActionHashChecker {
         Map<Integer, SchemaVersion> hashesByNumber = new TreeMap<>(versionDao.getHashes()
                                                                              .stream()
                                                                              .collect(Collectors.toMap(s -> Integer.valueOf(s.getKey()), s -> s)));
-        if(hashesByNumber.size() == 0) {
+        if (hashesByNumber.size() == 0) {
             log.info("There are no mutations previously applied. Running mutations.");
             return true;
         }
@@ -60,7 +62,7 @@ public class ActionHashChecker {
         while (resourcesIterator.hasNext()) {
             Map.Entry<Integer, Supplier<byte[]>> entry = resourcesIterator.next();
             boolean mutationIsPresent = hashesByNumber.containsKey(entry.getKey());
-            if (versionIterator.hasNext()){
+            if (versionIterator.hasNext()) {
                 versionIterator.next();
             }
             if (mutationIsPresent &&
@@ -92,6 +94,8 @@ public class ActionHashChecker {
      * Naive implementation of lazy loading map
      */
     private Map<Integer, Supplier<byte[]>> getMutations(List<String> resources) throws IOException {
+        ClassLoader classLoader = this.getClass().getClassLoader();
+
         return resources.stream()
                         .filter(p -> p.endsWith(".cql") || p.endsWith(".java"))
                         .map(Paths::get)
@@ -108,7 +112,8 @@ public class ActionHashChecker {
                             p ->
                                 () -> {
                                     try {
-                                        return Files.readAllBytes(p);
+                                        InputStream resourceAsStream = classLoader.getResourceAsStream(p.toString());
+                                        return resourceAsStream != null ? IOUtils.toByteArray(resourceAsStream) : Files.readAllBytes(p);
                                     } catch (IOException e) {
                                         log.error("Can not read bytes of {}", p.getFileName(), e);
                                         throw new RuntimeException(e);
